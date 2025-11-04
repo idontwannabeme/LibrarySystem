@@ -1,0 +1,314 @@
+﻿@{
+    ViewData["Title"] = "Администрирование - Библиотечная система";
+}
+
+<div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">⚙️ Администрирование</h1>
+        <p style="font-size: 1.2rem; color: #666;">Управление системой и аналитика</p>
+    </div>
+
+    <!-- Статистика -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👥</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #667eea;">@ViewBag.Stats.TotalUsers</div>
+            <div style="color: #666; font-size: 0.9rem;">Пользователей</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📚</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #4caf50;">@ViewBag.Stats.TotalBooks</div>
+            <div style="color: #666; font-size: 0.9rem;">Книг в фонде</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📖</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #ff9800;">@ViewBag.Stats.TotalLoans</div>
+            <div style="color: #666; font-size: 0.9rem;">Всего выдач</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #2196f3;">@ViewBag.Stats.TotalReservations</div>
+            <div style="color: #666; font-size: 0.9rem;">Всего броней</div>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <div style="background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="display: flex; border-bottom: 1px solid #e9ecef;">
+            <button class="tab-button active" onclick="openTab('analytics')">📊 Аналитика</button>
+            <button class="tab-button" onclick="openTab('users')">👥 Управление пользователями</button>
+            <button class="tab-button" onclick="openTab('access')">🔐 Права доступа</button>
+        </div>
+
+        <!-- Вкладка Аналитика -->
+        <div id="analytics" class="tab-content active">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">Статистика системы</h3>
+                <div id="analyticsContent">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка аналитики...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Управление пользователями -->
+        <div id="users" class="tab-content">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">Все пользователи системы</h3>
+                <div id="usersList">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка пользователей...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Права доступа -->
+        <div id="access" class="tab-content">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">Управление доступом к книгам</h3>
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; margin-bottom: 2rem;">
+                    <h4 style="color: #333; margin-bottom: 1rem;">📚 Книги с ограниченным доступом</h4>
+                    <div id="restrictedBooks">
+                        <div style="text-align: center; padding: 1rem; color: #666;">
+                            Загрузка списка книг...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-button {
+        flex: 1;
+        padding: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+    .tab-button:hover {
+        background: #f8f9fa;
+    }
+    .tab-button.active {
+        background: #667eea;
+        color: white;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+</style>
+
+<script>
+    // Управление вкладками
+    function openTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        if (tabName === 'analytics') {
+            loadAnalytics();
+        } else if (tabName === 'users') {
+            loadAllUsers();
+        } else if (tabName === 'access') {
+            loadRestrictedBooks();
+        }
+    }
+
+    // Загрузка аналитики
+    function loadAnalytics() {
+        fetch('/Home/GetSystemStats')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const stats = data.stats;
+                    let analyticsHTML = `
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                            <div>
+                                <h4 style="color: #333; margin-bottom: 1rem;">👥 Пользователи по ролям</h4>
+                                <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    `;
+
+                    stats.usersByRole.forEach(role => {
+                        analyticsHTML += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+                                <span>${role.role}</span>
+                                <span style="font-weight: 600; color: #667eea;">${role.count}</span>
+                            </div>
+                        `;
+                    });
+
+                    analyticsHTML += `
+                                </div>
+                            </div>
+                            <div>
+                                <h4 style="color: #333; margin-bottom: 1rem;">📚 Статус книг</h4>
+                                <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                    `;
+
+                    stats.booksByStatus.forEach(status => {
+                        analyticsHTML += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f0f0f0;">
+                                <span>${status.status}</span>
+                                <span style="font-weight: 600; color: #4caf50;">${status.count}</span>
+                            </div>
+                        `;
+                    });
+
+                    analyticsHTML += `
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 2rem;">
+                            <h4 style="color: #333; margin-bottom: 1rem;">📈 Ключевые метрики</h4>
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div style="background: white; padding: 1.5rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); text-align: center;">
+                                    <div style="font-size: 2rem; color: #2196f3; margin-bottom: 0.5rem;">📖</div>
+                                    <div style="font-size: 1.5rem; font-weight: 800; color: #2196f3;">${stats.monthlyLoans}</div>
+                                    <div style="color: #666; font-size: 0.9rem;">Выдач в этом месяце</div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    document.getElementById('analyticsContent').innerHTML = analyticsHTML;
+                }
+            });
+    }
+
+    // Загрузка всех пользователей
+    function loadAllUsers() {
+        // В реальной системе здесь был бы отдельный endpoint
+        const users = [
+            { id: 1, fullName: "Иванов Иван", email: "reader@library.ru", role: "Reader", isActive: true },
+            { id: 2, fullName: "Петрова С.М.", email: "librarian@library.ru", role: "Librarian", isActive: true },
+            { id: 3, fullName: "Сидоров А.В.", email: "admin@library.ru", role: "Admin", isActive: true },
+            { id: 4, fullName: "Кузнецов Д.С.", email: "sysadmin@library.ru", role: "SystemAdmin", isActive: true }
+        ];
+
+        let usersHTML = '<div style="display: grid; gap: 1rem;">';
+        users.forEach(user => {
+            usersHTML += `
+                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #333;">${user.fullName}</h4>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Email:</strong> ${user.email}</p>
+                        <p style="margin: 0; color: #666;"><strong>Роль:</strong> 
+                            <span style="background: #667eea; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${user.role}</span>
+                            ${user.isActive ? ' <span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">Активен</span>' : ''}
+                        </p>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <select onchange="updateUserRole(${user.id}, this.value)" style="padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px;">
+                            <option value="Reader" ${user.role === 'Reader' ? 'selected' : ''}>Читатель</option>
+                            <option value="Librarian" ${user.role === 'Librarian' ? 'selected' : ''}>Сотрудник</option>
+                            <option value="Admin" ${user.role === 'Admin' ? 'selected' : ''}>Администратор</option>
+                            <option value="SystemAdmin" ${user.role === 'SystemAdmin' ? 'selected' : ''}>Системный администратор</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+        });
+        usersHTML += '</div>';
+        document.getElementById('usersList').innerHTML = usersHTML;
+    }
+
+    // Загрузка книг с ограниченным доступом
+    function loadRestrictedBooks() {
+        // В реальной системе здесь был бы запрос к API
+        const restrictedBooks = [
+            { id: 3, title: "Мастер и Маргарита", author: "Михаил Булгаков", location: "Зал1-Ст3-Пол1", readingRoomOnly: true },
+            { id: 8, title: "Атлант расправил плечи", author: "Айн Рэнд", location: "Зал3-Ст1-Пол3", readingRoomOnly: true }
+        ];
+
+        let booksHTML = '<div style="display: grid; gap: 1rem;">';
+        restrictedBooks.forEach(book => {
+            booksHTML += `
+                <div style="background: #fff3e0; padding: 1.5rem; border-radius: 10px; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #333;">${book.title}</h4>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Автор:</strong> ${book.author}</p>
+                        <p style="margin: 0; color: #666;"><strong>Местоположение:</strong> ${book.location}</p>
+                    </div>
+                    <div>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                            <input type="checkbox" ${book.readingRoomOnly ? 'checked' : ''} onchange="toggleAccessRules(${book.id}, this.checked)">
+                            Только читальный зал
+                        </label>
+                    </div>
+                </div>
+            `;
+        });
+        booksHTML += '</div>';
+        document.getElementById('restrictedBooks').innerHTML = booksHTML;
+    }
+
+    // Обновление роли пользователя
+    function updateUserRole(userId, newRole) {
+        if (confirm(`Изменить роль пользователя на "${newRole}"?`)) {
+            fetch('/Home/UpdateUserRole', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: userId,
+                    newRole: newRole
+                })
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+            })
+            .catch(error => {
+                alert('Ошибка при обновлении роли');
+                console.error('Error:', error);
+            });
+        }
+    }
+
+    // Изменение правил доступа
+    function toggleAccessRules(bookId, readingRoomOnly) {
+        fetch('/Home/SetAccessRules', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                bookId: bookId,
+                readingRoomOnly: readingRoomOnly
+            })
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                // Можно показать уведомление об успехе
+                console.log(result.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+
+    // Загружаем аналитику при открытии страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadAnalytics();
+    });
+</script>

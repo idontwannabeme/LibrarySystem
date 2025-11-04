@@ -1,0 +1,204 @@
+﻿﻿@{
+    ViewData["Title"] = "Мои книги - Библиотечная система";
+}
+
+<div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">📖 Мои книги</h1>
+        <p style="font-size: 1.2rem; color: #666;">Управляйте своими бронированиями и отслеживайте выданные книги</p>
+    </div>
+
+    <!-- Вкладки -->
+    <div style="background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem;">
+        <div style="display: flex; border-bottom: 1px solid #e9ecef;">
+            <button class="tab-button active" onclick="openTab('reservations')">📅 Мои бронирования</button>
+            <button class="tab-button" onclick="openTab('loans')">📚 Выданные мне книги</button>
+        </div>
+
+        <!-- Вкладка Бронирования -->
+        <div id="reservations" class="tab-content active">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">📅 Активные бронирования</h3>
+                <div id="myReservations">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка бронирований...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Выданные книги -->
+        <div id="loans" class="tab-content">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">📚 Книги на руках</h3>
+                <div id="myLoans">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка выданных книг...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #ff9800;" id="reservationsCount">0</div>
+            <div style="color: #666; font-size: 0.9rem;">Активных броней</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📖</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #4caf50;" id="loansCount">0</div>
+            <div style="color: #666; font-size: 0.9rem;">Книг на руках</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⏰</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #f44336;" id="overdueCount">0</div>
+            <div style="color: #666; font-size: 0.9rem;">Просрочено</div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-button {
+        flex: 1;
+        padding: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+    .tab-button:hover {
+        background: #f8f9fa;
+    }
+    .tab-button.active {
+        background: #667eea;
+        color: white;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+</style>
+
+<script>
+    // Управление вкладками
+    function openTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        if (tabName === 'reservations') {
+            loadMyReservations();
+        } else if (tabName === 'loans') {
+            loadMyLoans();
+        }
+    }
+
+    // Загрузка моих бронирований
+    function loadMyReservations() {
+        fetch('/Home/MyBooks')
+            .then(response => response.text())
+            .then(html => {
+                // Создаем временный элемент для парсинга HTML
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                // Извлекаем данные из скрытых полей или парсим HTML
+                const reservationsSection = tempDiv.querySelector('#myReservations');
+                if (reservationsSection) {
+                    document.getElementById('myReservations').innerHTML = reservationsSection.innerHTML;
+                }
+                updateStats();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('myReservations').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <p>Ошибка загрузки бронирований</p>
+                    </div>
+                `;
+            });
+    }
+
+    // Загрузка моих выданных книг
+    function loadMyLoans() {
+        fetch('/Home/MyBooks')
+            .then(response => response.text())
+            .then(html => {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = html;
+
+                const loansSection = tempDiv.querySelector('#myLoans');
+                if (loansSection) {
+                    document.getElementById('myLoans').innerHTML = loansSection.innerHTML;
+                }
+                updateStats();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('myLoans').innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <p>Ошибка загрузки выданных книг</p>
+                    </div>
+                `;
+            });
+    }
+
+    // Обновление статистики
+    function updateStats() {
+        const reservations = document.querySelectorAll('#myReservations .reservation-item').length;
+        const loans = document.querySelectorAll('#myLoans .loan-item').length;
+        const overdue = document.querySelectorAll('#myLoans .overdue').length;
+
+        document.getElementById('reservationsCount').textContent = reservations;
+        document.getElementById('loansCount').textContent = loans;
+        document.getElementById('overdueCount').textContent = overdue;
+    }
+
+    // Отмена бронирования
+    function cancelReservation(reservationId) {
+        if (!confirm('Отменить бронирование этой книги?')) return;
+
+        const formData = new FormData();
+        formData.append('reservationId', reservationId);
+
+        fetch('/Home/CancelReservation', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            if (result.success) {
+                loadMyReservations();
+                updateStats();
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при отмене бронирования');
+        });
+    }
+
+    // Загружаем данные при открытии страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadMyReservations();
+        loadMyLoans();
+    });
+</script>

@@ -1,0 +1,193 @@
+﻿﻿@{
+    ViewData["Title"] = "Поиск книг - Библиотечная система";
+}
+
+<div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">🔍 Умный поиск книг</h1>
+        <p style="font-size: 1.2rem; color: #666;">Найдите нужную книгу по автору, названию, жанру или ключевым словам</p>
+    </div>
+
+    <!-- Поисковая форма -->
+    <div style="background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; margin-bottom: 1rem;">
+            <input type="text" id="searchInput" placeholder="Введите название, автора, жанр или ключевые слова..." style="padding: 12px 20px; border: 2px solid #e9ecef; border-radius: 10px; font-size: 1rem; transition: all 0.3s ease;">
+            <button onclick="performSearch()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 12px 30px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 1rem;">Найти</button>
+        </div>
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+            <label style="font-weight: 600; color: #333;">Искать по:</label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="searchBy" value="all" checked> Всему
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="searchBy" value="title"> Названию
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="searchBy" value="author"> Автору
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                <input type="radio" name="searchBy" value="genre"> Жанру
+            </label>
+        </div>
+    </div>
+
+    <!-- Результаты поиска -->
+    <div id="searchResults">
+        <div style="text-align: center; padding: 3rem; color: #666;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+            <p style="font-size: 1.2rem;">Введите запрос для поиска книг</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function performSearch() {
+        const searchTerm = document.getElementById('searchInput').value;
+        const searchBy = document.querySelector('input[name="searchBy"]:checked').value;
+
+        if (!searchTerm.trim()) {
+            alert('Введите поисковый запрос');
+            return;
+        }
+
+        // Показываем индикатор загрузки
+        document.getElementById('searchResults').innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                <p>Поиск книг...</p>
+            </div>
+        `;
+
+        fetch(`/Home/SearchBooks?searchTerm=${encodeURIComponent(searchTerm)}&searchBy=${searchBy}`)
+            .then(response => response.json())
+            .then(books => {
+                displaySearchResults(books);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('searchResults').innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <p>Ошибка при поиске книг</p>
+                    </div>
+                `;
+            });
+    }
+
+    function displaySearchResults(books) {
+        if (!books || books.length === 0) {
+            document.getElementById('searchResults').innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+                    <p style="font-size: 1.2rem;">Книги по вашему запросу не найдены</p>
+                    <p style="color: #888;">Попробуйте изменить поисковый запрос</p>
+                </div>
+            `;
+            return;
+        }
+
+        let resultsHTML = `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="color: #333; margin-bottom: 0.5rem;">Найдено книг: ${books.length}</h3>
+            </div>
+            <div style="display: grid; gap: 1.5rem;">
+        `;
+
+        books.forEach(book => {
+            const statusColor = book.status === 'Available' ? '#4caf50' : 
+                              book.status === 'Reserved' ? '#ff9800' : 
+                              book.status === 'Issued' ? '#2196f3' : '#666';
+
+            const statusText = book.status === 'Available' ? 'Доступна' : 
+                             book.status === 'Reserved' ? 'Забронирована' : 
+                             book.status === 'Issued' ? 'Выдана' : 'Неизвестно';
+
+            resultsHTML += `
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: start;">
+                    <div>
+                        <h4 style="margin: 0 0 0.5rem 0; color: #333; font-size: 1.3rem;">${book.title}</h4>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Автор:</strong> ${book.author}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Жанр:</strong> ${book.genre || 'Не указан'}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Год:</strong> ${book.year}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Местоположение:</strong> ${book.location}</p>
+                        <p style="margin: 0; color: #666;">
+                            <strong>Статус:</strong> 
+                            <span style="color: ${statusColor}; font-weight: 600;">${statusText}</span>
+                            ${book.readingRoomOnly ? ' <span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">Только читальный зал</span>' : ''}
+                        </p>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <button onclick="showBookDetails(${book.id})" style="background: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            📖 Подробнее
+                        </button>
+                        ${book.status === 'Available' ? `
+                        <button onclick="reserveBook(${book.id})" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                            📅 Забронировать
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        resultsHTML += '</div>';
+        document.getElementById('searchResults').innerHTML = resultsHTML;
+    }
+
+    function showBookDetails(bookId) {
+        fetch(`/Home/GetBookDetails?bookId=${bookId}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const book = result.book;
+                    alert(`
+Название: ${book.title}
+Автор: ${book.author}
+Жанр: ${book.genre || 'Не указан'}
+Год издания: ${book.year}
+ISBN: ${book.isbn || 'Не указан'}
+Местоположение: ${book.location}
+Статус: ${book.status}
+${book.readingRoomOnly ? 'Только для чтения в зале' : 'Можно брать на дом'}
+${book.description ? `Описание: ${book.description}` : ''}
+                    `);
+                } else {
+                    alert('Не удалось загрузить информацию о книге');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при загрузке информации о книге');
+            });
+    }
+
+    function reserveBook(bookId) {
+        if (!confirm('Забронировать эту книгу?')) return;
+
+        const formData = new FormData();
+        formData.append('bookId', bookId);
+
+        fetch('/Home/ReserveBook', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            if (result.success) {
+                performSearch(); // Обновляем результаты поиска
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при бронировании книги');
+        });
+    }
+
+    // Поиск при нажатии Enter
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            performSearch();
+        }
+    });
+</script>

@@ -1,0 +1,488 @@
+﻿﻿@{
+    ViewData["Title"] = "Управление - Библиотечная система";
+}
+
+<div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">👥 Панель управления</h1>
+        <p style="font-size: 1.2rem; color: #666;">Управление читателями и библиотечным фондом</p>
+    </div>
+
+    <!-- Статистика -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">👥</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #667eea;">@ViewBag.Stats.TotalReaders</div>
+            <div style="color: #666; font-size: 0.9rem;">Читателей</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #ff9800;">@ViewBag.Stats.ActiveReservations</div>
+            <div style="color: #666; font-size: 0.9rem;">Активных броней</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📖</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #4caf50;">@ViewBag.Stats.ActiveLoans</div>
+            <div style="color: #666; font-size: 0.9rem;">Выданных книг</div>
+        </div>
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
+            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⏰</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #f44336;">@ViewBag.Stats.OverdueLoans</div>
+            <div style="color: #666; font-size: 0.9rem;">Просрочек</div>
+        </div>
+    </div>
+
+    <!-- Вкладки -->
+    <div style="background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden;">
+        <div style="display: flex; border-bottom: 1px solid #e9ecef;">
+            <button class="tab-button active" onclick="openTab('readers')">👥 Читатели</button>
+            <button class="tab-button" onclick="openTab('reservations')">📅 Бронирования</button>
+            <button class="tab-button" onclick="openTab('loans')">📖 Выдача книг</button>
+            <button class="tab-button" onclick="openTab('books')">📚 Учет книг</button>
+        </div>
+
+        <!-- Вкладка Читатели -->
+        <div id="readers" class="tab-content active">
+            <div style="padding: 2rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3 style="color: #333; margin: 0;">Список читателей</h3>
+                    <button onclick="showRegisterReaderForm()" style="background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        + Добавить читателя
+                    </button>
+                </div>
+                <div id="readersList">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка списка читателей...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Бронирования -->
+        <div id="reservations" class="tab-content">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">Активные бронирования</h3>
+                <div id="reservationsList">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка бронирований...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Выдача книг -->
+        <div id="loans" class="tab-content">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">Активные выдачи</h3>
+                <div id="loansList">
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                        <p>Загрузка выданных книг...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Вкладка Учет книг -->
+        <div id="books" class="tab-content">
+            <div style="padding: 2rem;">
+                <h3 style="color: #333; margin-bottom: 2rem;">Добавление новой книги</h3>
+                <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Название книги *</label>
+                            <input type="text" id="bookTitle" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Автор *</label>
+                            <input type="text" id="bookAuthor" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">ISBN</label>
+                            <input type="text" id="bookISBN" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Жанр</label>
+                            <input type="text" id="bookGenre" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Год издания *</label>
+                            <input type="number" id="bookYear" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;" value="@DateTime.Now.Year">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Местоположение *</label>
+                            <input type="text" id="bookLocation" placeholder="Зал-Стеллаж-Полка" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                        </div>
+                        <div style="display: flex; align-items: end;">
+                            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                                <input type="checkbox" id="bookReadingRoomOnly">
+                                Только читальный зал
+                            </label>
+                        </div>
+                    </div>
+                    <button onclick="addNewBook()" style="background: #2196f3; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        📚 Добавить книгу в фонд
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно регистрации читателя -->
+<div id="registerReaderModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+    <div style="background: white; padding: 2rem; border-radius: 15px; max-width: 500px; width: 90%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="margin: 0; color: #333;">👤 Регистрация нового читателя</h3>
+            <button onclick="closeModal()" style="background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #666;">×</button>
+        </div>
+        <div style="display: grid; gap: 1rem;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">ФИО *</label>
+                <input type="text" id="readerFullName" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email *</label>
+                <input type="email" id="readerEmail" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Студенческий билет *</label>
+                <input type="text" id="readerStudentId" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Категория *</label>
+                <select id="readerCategory" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="Студент">Студент</option>
+                    <option value="Аспирант">Аспирант</option>
+                    <option value="Преподаватель">Преподаватель</option>
+                    <option value="Сотрудник">Сотрудник</option>
+                </select>
+            </div>
+        </div>
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button onclick="registerReader()" style="background: #4caf50; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1;">
+                Зарегистрировать
+            </button>
+            <button onclick="closeModal()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; flex: 1;">
+                Отмена
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tab-button {
+        flex: 1;
+        padding: 1rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: #666;
+        transition: all 0.3s ease;
+    }
+    .tab-button:hover {
+        background: #f8f9fa;
+    }
+    .tab-button.active {
+        background: #667eea;
+        color: white;
+    }
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+</style>
+
+<script>
+    // Управление вкладками
+    function openTab(tabName) {
+        // Скрываем все вкладки
+        document.querySelectorAll('.tab-content').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.classList.remove('active');
+        });
+
+        // Показываем выбранную вкладку
+        document.getElementById(tabName).classList.add('active');
+        event.target.classList.add('active');
+
+        // Загружаем данные для вкладки
+        if (tabName === 'readers') {
+            loadReaders();
+        } else if (tabName === 'reservations') {
+            loadReservations();
+        } else if (tabName === 'loans') {
+            loadLoans();
+        }
+    }
+
+    // Загрузка читателей
+    function loadReaders() {
+        fetch('/Home/GetReaders')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let readersHTML = '';
+                    if (data.readers.length === 0) {
+                        readersHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Нет зарегистрированных читателей</div>';
+                    } else {
+                        readersHTML = '<div style="display: grid; gap: 1rem;">';
+                        data.readers.forEach(reader => {
+                            readersHTML += `
+                                <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px;">
+                                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start;">
+                                        <div>
+                                            <h4 style="margin: 0 0 0.5rem 0; color: #333;">${reader.fullName}</h4>
+                                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Email:</strong> ${reader.email}</p>
+                                            <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Студенческий:</strong> ${reader.studentId}</p>
+                                            <p style="margin: 0; color: #666;"><strong>Категория:</strong> ${reader.category} | <strong>Регистрация:</strong> ${reader.registrationDate}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        readersHTML += '</div>';
+                    }
+                    document.getElementById('readersList').innerHTML = readersHTML;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('readersList').innerHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Ошибка загрузки</div>';
+            });
+    }
+
+    // Загрузка бронирований
+    function loadReservations() {
+        fetch('/Home/GetActiveReservations')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let reservationsHTML = '';
+                    if (data.reservations.length === 0) {
+                        reservationsHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Нет активных бронирований</div>';
+                    } else {
+                        reservationsHTML = '<div style="display: grid; gap: 1rem;">';
+                        data.reservations.forEach(reservation => {
+                            reservationsHTML += `
+                                <div style="background: #fff3e0; padding: 1.5rem; border-radius: 10px; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                                    <div>
+                                        <h4 style="margin: 0 0 0.5rem 0; color: #333;">${reservation.bookTitle}</h4>
+                                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Автор:</strong> ${reservation.bookAuthor}</p>
+                                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Читатель:</strong> ${reservation.readerName}</p>
+                                        <p style="margin: 0; color: #666;"><strong>Забронировано:</strong> ${reservation.reservationDate} | <strong>Действует до:</strong> ${reservation.expiryDate}</p>
+                                    </div>
+                                    <button onclick="issueBook(${reservation.id})" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                                        Выдать книгу
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        reservationsHTML += '</div>';
+                    }
+                    document.getElementById('reservationsList').innerHTML = reservationsHTML;
+                }
+            });
+    }
+
+    // Загрузка выданных книг
+    function loadLoans() {
+        fetch('/Home/GetActiveLoans')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    let loansHTML = '';
+                    if (data.loans.length === 0) {
+                        loansHTML = '<div style="text-align: center; padding: 2rem; color: #666;">Нет активных выдач</div>';
+                    } else {
+                        loansHTML = '<div style="display: grid; gap: 1rem;">';
+                        data.loans.forEach(loan => {
+                            const overdueStyle = loan.isOverdue ? 'background: #ffebee; border-left: 4px solid #f44336;' : 'background: #f8f9fa;';
+                            loansHTML += `
+                                <div style="${overdueStyle} padding: 1.5rem; border-radius: 10px; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                                    <div>
+                                        <h4 style="margin: 0 0 0.5rem 0; color: #333;">${loan.bookTitle}</h4>
+                                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Автор:</strong> ${loan.bookAuthor}</p>
+                                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>Читатель:</strong> ${loan.readerName}</p>
+                                        <p style="margin: 0; color: #666;">
+                                            <strong>Выдана:</strong> ${loan.issueDate} | 
+                                            <strong>Вернуть до:</strong> ${loan.dueDate}
+                                            ${loan.isOverdue ? ' <span style="color: #f44336; font-weight: 600;">(ПРОСРОЧЕНО)</span>' : ''}
+                                        </p>
+                                    </div>
+                                    <button onclick="returnBook(${loan.id})" style="background: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                                        Принять возврат
+                                    </button>
+                                </div>
+                            `;
+                        });
+                        loansHTML += '</div>';
+                    }
+                    document.getElementById('loansList').innerHTML = loansHTML;
+                }
+            });
+    }
+
+    // Регистрация читателя
+    function showRegisterReaderForm() {
+        document.getElementById('registerReaderModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('registerReaderModal').style.display = 'none';
+    }
+
+    function registerReader() {
+        const fullName = document.getElementById('readerFullName').value;
+        const email = document.getElementById('readerEmail').value;
+        const studentId = document.getElementById('readerStudentId').value;
+        const category = document.getElementById('readerCategory').value;
+
+        if (!fullName || !email) {
+            alert('Пожалуйста, заполните все обязательные поля');
+            return;
+        }
+
+        // Используем FormData для отправки
+        const formData = new FormData();
+        formData.append('fullName', fullName);
+        formData.append('email', email);
+        formData.append('studentId', studentId);
+        formData.append('category', category);
+
+        fetch('/Home/RegisterReader', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            if (result.success) {
+                closeModal();
+                loadReaders();
+                // Очищаем форму
+                document.getElementById('readerFullName').value = '';
+                document.getElementById('readerEmail').value = '';
+                document.getElementById('readerStudentId').value = '';
+            }
+        })
+        .catch(error => {
+            alert('Ошибка при регистрации читателя');
+            console.error('Error:', error);
+        });
+    }
+
+    // Выдача книги
+    function issueBook(reservationId) {
+        if (confirm('Выдать книгу читателю?')) {
+            const formData = new FormData();
+            formData.append('reservationId', reservationId);
+
+            fetch('/Home/IssueBook', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+                if (result.success) {
+                    loadReservations();
+                    loadLoans();
+                }
+            })
+            .catch(error => {
+                alert('Ошибка при выдаче книги');
+                console.error('Error:', error);
+            });
+        }
+    }
+
+    // Возврат книги
+    function returnBook(loanId) {
+        if (confirm('Принять возврат книги?')) {
+            const formData = new FormData();
+            formData.append('loanId', loanId);
+
+            fetch('/Home/ReturnBook', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(result.message);
+                if (result.success) {
+                    loadLoans();
+                    loadReservations();
+                }
+            })
+            .catch(error => {
+                alert('Ошибка при возврате книги');
+                console.error('Error:', error);
+            });
+        }
+    }
+
+    // Добавление новой книги
+    function addNewBook() {
+        const title = document.getElementById('bookTitle').value;
+        const author = document.getElementById('bookAuthor').value;
+        const isbn = document.getElementById('bookISBN').value;
+        const genre = document.getElementById('bookGenre').value;
+        const year = document.getElementById('bookYear').value;
+        const location = document.getElementById('bookLocation').value;
+        const readingRoomOnly = document.getElementById('bookReadingRoomOnly').checked;
+
+        if (!title || !author || !year || !location) {
+            alert('Пожалуйста, заполните все обязательные поля');
+            return;
+        }
+
+        // Используем FormData для отправки
+        const formData = new FormData();
+        formData.append('title', title);
+        formData.append('author', author);
+        formData.append('isbn', isbn);
+        formData.append('genre', genre);
+        formData.append('year', year);
+        formData.append('location', location);
+        formData.append('readingRoomOnly', readingRoomOnly);
+
+        fetch('/Home/AddBook', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            if (result.success) {
+                // Очищаем форму
+                document.getElementById('bookTitle').value = '';
+                document.getElementById('bookAuthor').value = '';
+                document.getElementById('bookISBN').value = '';
+                document.getElementById('bookGenre').value = '';
+                document.getElementById('bookLocation').value = '';
+                document.getElementById('bookReadingRoomOnly').checked = false;
+            }
+        })
+        .catch(error => {
+            alert('Ошибка при добавлении книги');
+            console.error('Error:', error);
+        });
+    }
+
+    // Загружаем данные при открытии страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadReaders();
+    });
+</script>

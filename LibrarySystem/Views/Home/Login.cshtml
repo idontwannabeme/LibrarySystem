@@ -1,0 +1,257 @@
+﻿@{
+    ViewData["Title"] = "Вход в систему";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-container {
+            background: white;
+            border-radius: 15px;
+            padding: 40px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: slideUp 0.5s ease-out;
+        }
+
+        .library-logo {
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, #2e7d32, #4caf50);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            font-weight: bold;
+        }
+
+        .welcome-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .welcome-header h2 {
+            color: #2e7d32;
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .welcome-header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 12px;
+            background: none;
+            border: none;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .auth-tab.active {
+            color: #2e7d32;
+            border-bottom: 3px solid #2e7d32;
+            font-weight: 600;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+
+        .btn {
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: #1b5e20;
+        }
+
+        .test-users {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .test-users h4 {
+            color: #2e7d32;
+            margin-bottom: 10px;
+        }
+
+        .test-user {
+            padding: 5px 0;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .test-user .role {
+            display: inline-block;
+            background: #e8f5e9;
+            color: #2e7d32;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .error-message {
+            color: #d32f2f;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #ffebee;
+            border-radius: 4px;
+        }
+
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="library-logo">Б</div>
+        <div class="welcome-header">
+            <h2>Добро пожаловать!</h2>
+            <p>Войдите в библиотечную систему</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+                <div class="error-message">@ViewBag.Error</div>
+        }
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" data-tab="login">Вход</button>
+            <button class="auth-tab" data-tab="register">Регистрация</button>
+        </div>
+
+        <!-- Форма входа -->
+        <form class="auth-form active" method="post" action="@Url.Action("Login", "Home")">
+            <div class="form-group">
+                <input type="email" name="Email" placeholder="Email" required value="reader@library.ru">
+            </div>
+            <div class="form-group">
+                <input type="password" name="Password" placeholder="Пароль" required value="123456">
+            </div>
+            <button type="submit" class="btn">Войти в систему</button>
+        </form>
+
+        <!-- Форма регистрации -->
+        <form class="auth-form" method="post" action="@Url.Action("Register", "Home")">
+            <div class="form-group">
+                <input type="text" name="FullName" placeholder="ФИО" required>
+            </div>
+            <div class="form-group">
+                <input type="email" name="Email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+                <input type="text" name="StudentId" placeholder="Студенческий билет" required>
+            </div>
+            <div class="form-group">
+                <input type="password" name="Password" placeholder="Пароль" required>
+            </div>
+            <button type="submit" class="btn">Зарегистрироваться</button>
+        </form>
+
+        <!-- Тестовые пользователи -->
+        <div class="test-users">
+            <h4>Тестовые аккаунты:</h4>
+            <div class="test-user">👨‍🎓 reader@library.ru / 123456 <span class="role">Читатель</span></div>
+            <div class="test-user">👨‍🏫 librarian@library.ru / 123456 <span class="role">Сотрудник</span></div>
+            <div class="test-user">⚡ admin@library.ru / 123456 <span class="role">Администратор</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Переключение между вкладками
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                const tabName = this.getAttribute('data-tab');
+
+                // Активируем вкладку
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+
+                // Показываем соответствующую форму
+                document.querySelectorAll('.auth-form').forEach(form => {
+                    form.classList.remove('active');
+                    if (form.getAttribute('action').includes(tabName)) {
+                        form.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

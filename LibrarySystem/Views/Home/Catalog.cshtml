@@ -1,0 +1,209 @@
+﻿﻿@{
+    ViewData["Title"] = "Каталог - Библиотечная система";
+}
+
+<div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">📚 Полный каталог</h1>
+        <p style="font-size: 1.2rem; color: #666;">Весь библиотечный фонд в вашем распоряжении</p>
+    </div>
+
+    <!-- Фильтры -->
+    <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Поиск по названию/автору</label>
+                <input type="text" id="catalogSearch" placeholder="Введите запрос..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Жанр</label>
+                <select id="genreFilter" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="">Все жанры</option>
+                    <option value="Классика">Классика</option>
+                    <option value="Фэнтези">Фэнтези</option>
+                    <option value="Антиутопия">Антиутопия</option>
+                    <option value="Философия">Философия</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Статус</label>
+                <select id="statusFilter" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px;">
+                    <option value="">Все статусы</option>
+                    <option value="Available">Доступна</option>
+                    <option value="Reserved">Забронирована</option>
+                    <option value="Issued">Выдана</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="loadCatalog()" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">Применить фильтры</button>
+    </div>
+
+    <!-- Каталог книг -->
+    <div id="catalogContent">
+        <div style="text-align: center; padding: 3rem; color: #666;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+            <p>Загрузка каталога...</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function loadCatalog() {
+        const searchTerm = document.getElementById('catalogSearch').value;
+        const genre = document.getElementById('genreFilter').value;
+        const status = document.getElementById('statusFilter').value;
+
+        // Показываем индикатор загрузки
+        document.getElementById('catalogContent').innerHTML = `
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                <p>Загрузка книг...</p>
+            </div>
+        `;
+
+        let url = '/Home/SearchBooks?searchBy=all';
+        if (searchTerm) url += `&searchTerm=${encodeURIComponent(searchTerm)}`;
+        if (genre) url += `&searchTerm=${encodeURIComponent(genre)}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(books => {
+                // Фильтруем по статусу на клиенте
+                if (status) {
+                    books = books.filter(book => book.status === status);
+                }
+                displayCatalog(books);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('catalogContent').innerHTML = `
+                    <div style="text-align: center; padding: 3rem; color: #666;">
+                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
+                        <p>Ошибка при загрузке каталога</p>
+                    </div>
+                `;
+            });
+    }
+
+    function displayCatalog(books) {
+        if (!books || books.length === 0) {
+            document.getElementById('catalogContent').innerHTML = `
+                <div style="text-align: center; padding: 3rem; color: #666;">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+                    <p style="font-size: 1.2rem;">Книги не найдены</p>
+                    <p style="color: #888;">Попробуйте изменить параметры фильтрации</p>
+                </div>
+            `;
+            return;
+        }
+
+        let catalogHTML = `
+            <div style="margin-bottom: 1.5rem;">
+                <h3 style="color: #333; margin-bottom: 0.5rem;">Найдено книг: ${books.length}</h3>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+        `;
+
+        books.forEach(book => {
+            const statusColor = book.status === 'Available' ? '#4caf50' : 
+                              book.status === 'Reserved' ? '#ff9800' : 
+                              book.status === 'Issued' ? '#2196f3' : '#666';
+
+            const statusText = book.status === 'Available' ? 'Доступна' : 
+                             book.status === 'Reserved' ? 'Забронирована' : 
+                             book.status === 'Issued' ? 'Выдана' : 'Неизвестно';
+
+            catalogHTML += `
+                <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                    <h4 style="margin: 0 0 1rem 0; color: #333; font-size: 1.2rem; line-height: 1.4;">${book.title}</h4>
+
+                    <div style="margin-bottom: 1rem;">
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>👤 Автор:</strong> ${book.author}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>📂 Жанр:</strong> ${book.genre || 'Не указан'}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>📅 Год:</strong> ${book.year}</p>
+                        <p style="margin: 0 0 0.5rem 0; color: #666;"><strong>📍 Место:</strong> ${book.location}</p>
+                        <p style="margin: 0 0 1rem 0; color: #666;">
+                            <strong>📊 Статус:</strong> 
+                            <span style="color: ${statusColor}; font-weight: 600;">${statusText}</span>
+                        </p>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button onclick="showBookDetails(${book.id})" style="background: #2196f3; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                            📖 Подробнее
+                        </button>
+                        ${book.status === 'Available' ? `
+                        <button onclick="reserveBook(${book.id})" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                            📅 Забронировать
+                        </button>
+                        ` : ''}
+                        ${book.readingRoomOnly ? `
+                        <span style="background: #ff9800; color: white; padding: 6px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 600;">
+                            📍 Читальный зал
+                        </span>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        });
+
+        catalogHTML += '</div>';
+        document.getElementById('catalogContent').innerHTML = catalogHTML;
+    }
+
+    function showBookDetails(bookId) {
+        fetch(`/Home/GetBookDetails?bookId=${bookId}`)
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const book = result.book;
+                    alert(`
+📚 ${book.title}
+
+👤 Автор: ${book.author}
+📂 Жанр: ${book.genre || 'Не указан'}
+📅 Год издания: ${book.year}
+🔖 ISBN: ${book.isbn || 'Не указан'}
+📍 Местоположение: ${book.location}
+📊 Статус: ${book.status}
+${book.readingRoomOnly ? '📍 Только для чтения в зале' : '🏠 Можно брать на дом'}
+${book.description ? `\n📝 Описание:\n${book.description}` : ''}
+                    `);
+                } else {
+                    alert('Не удалось загрузить информацию о книге');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Ошибка при загрузке информации о книге');
+            });
+    }
+
+    function reserveBook(bookId) {
+        if (!confirm('Забронировать эту книгу?')) return;
+
+        const formData = new FormData();
+        formData.append('bookId', bookId);
+
+        fetch('/Home/ReserveBook', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(result => {
+            alert(result.message);
+            if (result.success) {
+                loadCatalog(); // Обновляем каталог
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Ошибка при бронировании книги');
+        });
+    }
+
+    // Загружаем каталог при открытии страницы
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCatalog();
+    });
+</script>

@@ -1,0 +1,122 @@
+﻿@{
+    ViewData["Title"] = ViewBag.PageTitle;
+}
+
+<div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 4rem 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem; text-align: center;">
+    <div style="font-size: 8rem; margin-bottom: 2rem;">🚧</div>
+
+    <h1 style="font-size: 3rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">
+        @ViewBag.PageTitle
+    </h1>
+
+    <p style="font-size: 1.4rem; color: #666; margin-bottom: 3rem; line-height: 1.6;">
+        @ViewBag.PageDescription
+    </p>
+
+    <div style="background: linear-gradient(135deg, #fff3cd, #ffeaa7); border: 2px solid #ffc107; border-radius: 15px; padding: 2rem; margin-bottom: 3rem; display: inline-block;">
+        <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+            <div style="font-size: 2rem;">⏳</div>
+            <div>
+                <h3 style="color: #856404; margin: 0 0 0.5rem 0; font-size: 1.5rem;">@ViewBag.FeatureStatus</h3>
+                <p style="color: #856404; margin: 0;">Ожидаемая дата: <strong>@ViewBag.ExpectedDate</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🎯</div>
+            <h4 style="color: #333; margin-bottom: 1rem;">Что будет в этой функции?</h4>
+            <p style="color: #666; line-height: 1.5;">
+                @if (ViewBag.PageTitle == "Читальный зал")
+                {
+                    <text>Бронирование мест, онлайн-карта зала, доступ к редким изданиям, комфортные рабочие зоны</text>
+                }
+                else if (ViewBag.PageTitle == "Уведомления")
+                {
+                    <text>Персональные уведомления о новых книгах, сроках возврата, мероприятиях и акциях</text>
+                }
+                else if (ViewBag.PageTitle == "Рекомендации")
+                {
+                    <text>Интеллектуальная система рекомендаций на основе ваших предпочтений и истории чтения</text>
+                }
+            </p>
+        </div>
+
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚡</div>
+            <h4 style="color: #333; margin-bottom: 1rem;">Преимущества</h4>
+            <p style="color: #666; line-height: 1.5;">
+                @if (ViewBag.PageTitle == "Читальный зал")
+                {
+                    <text>Удобное бронирование, тихая атмосфера, современное оборудование</text>
+                }
+                else if (ViewBag.PageTitle == "Уведомления")
+                {
+                    <text>Своевременная информация, персонализация, удобные настройки</text>
+                }
+                else if (ViewBag.PageTitle == "Рекомендации")
+                {
+                    <text>Открытие новых авторов, экономия времени, персонализированный подход</text>
+                }
+            </p>
+        </div>
+
+        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">📈</div>
+            <h4 style="color: #333; margin-bottom: 1rem;">Статус разработки</h4>
+            <p style="color: #666; line-height: 1.5;">
+                @if (ViewBag.PageTitle == "Читальный зал")
+                {
+                    <text>Проектирование интерфейса - 70%<br>Разработка функционала - 40%</text>
+                }
+                else if (ViewBag.PageTitle == "Уведомления")
+                {
+                    <text>Анализ требований - 90%<br>Прототипирование - 60%</text>
+                }
+                else if (ViewBag.PageTitle == "Рекомендации")
+                {
+                    <text>Сбор данных - 80%<br>Разработка алгоритмов - 30%</text>
+                }
+            </p>
+        </div>
+    </div>
+
+    <div style="background: #e7f3ff; border-radius: 12px; padding: 2rem; margin-bottom: 2rem;">
+        <h3 style="color: #0066cc; margin-bottom: 1rem;">📞 Обратная связь</h3>
+        <p style="color: #666; margin-bottom: 1rem;">Есть идеи или предложения по этой функции?</p>
+        <button onclick="showFeedbackForm()" style="background: #0066cc; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: 600;">
+            💡 Предложить идею
+        </button>
+    </div>
+
+    <a href="@Url.Action("Index", "Home")" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; text-decoration: none; padding: 12px 30px; border-radius: 8px; font-weight: 600; display: inline-block; transition: all 0.3s ease;"
+       onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(102,126,234,0.3)';" 
+       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+        🏠 Вернуться на главную
+    </a>
+</div>
+
+<script>
+    function showFeedbackForm() {
+        const featureName = "@ViewBag.PageTitle";
+        const message = `Хочу оставить отзыв о функции "${featureName}":\n\nМои предложения:`;
+
+        alert(`Спасибо за интерес к функции "${featureName}"!\n\nПока что вы можете отправить свои предложения на email: feedback@library.ru\n\nТема: Предложение по функции ${featureName}`);
+    }
+
+    // Анимация появления
+    document.addEventListener('DOMContentLoaded', function() {
+        const elements = document.querySelectorAll('div[style*="border-radius: 12px"], div[style*="border-radius: 15px"]');
+        elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(30px)';
+            element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+
+            setTimeout(() => {
+                element.style.opacity = '1';
+                element.style.transform = 'translateY(0)';
+            }, index * 200);
+        });
+    });
+</script>
