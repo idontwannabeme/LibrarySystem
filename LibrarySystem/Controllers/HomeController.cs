@@ -646,118 +646,163 @@ namespace LibrarySystem.Controllers
             };
 
             ViewBag.Stats = stats;
+
+            // Загружаем всех пользователей для управления
+            var users = await _context.Users
+                .OrderByDescending(u => u.RegistrationDate)
+                .Select(u => new UserManagementViewModel
+                {
+                    Id = u.Id,
+                    FullName = u.FullName,
+                    Email = u.Email,
+                    StudentId = u.StudentId,
+                    Role = u.Role,
+                    RegistrationDate = u.RegistrationDate,
+                    IsActive = u.IsActive
+                })
+                .ToListAsync();
+
+            ViewBag.Users = users;
+
             return View();
         }
+        [HttpPost]
+        public async Task<JsonResult> UpdateUserRole([FromBody] UpdateRoleRequest request)
+        {
+            try
+            {
+                if (!HasAccess(new[] { "Admin", "SystemAdmin" }))
+                    return Json(new { success = false, message = "Недостаточно прав" });
 
+                if (request == null || request.UserId <= 0 || string.IsNullOrEmpty(request.NewRole))
+                    return Json(new { success = false, message = "Некорректные данные" });
+
+                var user = await _context.Users.FindAsync(request.UserId);
+                if (user == null)
+                    return Json(new { success = false, message = "Пользователь не найден" });
+
+                // Не позволяем изменять роль самого себя
+                var currentUserId = HttpContext.Session.GetString("UserId");
+                if (currentUserId == request.UserId.ToString())
+                {
+                    return Json(new { success = false, message = "Нельзя изменить свою собственную роль" });
+                }
+
+                user.Role = request.NewRole;
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    message = $"Роль пользователя {user.FullName} изменена на {GetRoleDisplayName(request.NewRole)}"
+                });
+            }
+            catch (DbUpdateException ex)
+            {
+                var innerException = ex.InnerException?.Message ?? ex.Message;
+                return Json(new { success = false, message = $"Ошибка базы данных: {innerException}" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = $"Ошибка: {ex.Message}" });
+            }
+        }
+
+        // Модель для запроса изменения роли
+        public class UpdateRoleRequest
+        {
+            public int UserId { get; set; }
+            public string NewRole { get; set; }
+        }
+
+        // Вспомогательный метод для отображения названий ролей
+        private string GetRoleDisplayName(string role)
+        {
+            return role switch
+            {
+                "Reader" => "Читатель",
+                "Librarian" => "Сотрудник",
+                "Admin" => "Администратор",
+                "SystemAdmin" => "Системный администратор",
+                _ => role
+            };
+        }
         [HttpGet]
         public async Task<JsonResult> GetSystemStats()
         {
             if (!HasAccess(new[] { "Admin", "SystemAdmin" }))
                 return Json(new { success = false, message = "Недостаточно прав" });
 
-            var stats = new
-            {
-                usersByRole = await _context.Users
-                    .GroupBy(u => u.Role)
-                    .Select(g => new { role = g.Key, count = g.Count() })
-                    .ToListAsync(),
-                booksByStatus = await _context.Books
-                    .GroupBy(b => b.Status)
-                    .Select(g => new { status = g.Key, count = g.Count() })
-                    .ToListAsync(),
-                monthlyLoans = await _context.Loans
-                    .Where(l => l.IssueDate.Year == DateTime.Now.Year && l.IssueDate.Month == DateTime.Now.Month)
-                    .CountAsync(),
-                popularGenres = await _context.Books
-                    .Where(b => b.Genre != null)
-                    .GroupBy(b => b.Genre)
-                    .Select(g => new { genre = g.Key, count = g.Count() })
-                    .OrderByDescending(g => g.count)
-                    .Take(5)
-                    .ToListAsync()
-            };
-
-            return Json(new { success = true, stats });
-        }
-
-        [HttpPost]
-        public async Task<JsonResult> SetAccessRules()
-        {
             try
             {
-                if (!HasAccess(new[] { "Admin", "SystemAdmin" }))
-                    return Json(new { success = false, message = "Недостаточно прав" });
-
-                // Получаем данные из формы
-                var form = await Request.ReadFormAsync();
-                if (!int.TryParse(form["bookId"], out int bookId))
-                    return Json(new { success = false, message = "Некорректный ID книги" });
-
-                string readingRoomOnlyStr = form["readingRoomOnly"].ToString();
-                bool readingRoomOnly = readingRoomOnlyStr == "on" || readingRoomOnlyStr == "true";
-
-                var book = await _context.Books.FindAsync(bookId);
-                if (book == null)
-                    return Json(new { success = false, message = "Книга не найдена" });
-
-                book.ReadingRoomOnly = readingRoomOnly;
-                await _context.SaveChangesAsync();
-
-                return Json(new
+                var stats = new
                 {
-                    success = true,
-                    message = $"Правила доступа для книги '{book.Title}' обновлены"
-                });
-            }
-            catch (DbUpdateException ex)
-            {
-                var innerException = ex.InnerException?.Message ?? ex.Message;
-                return Json(new { success = false, message = $"Ошибка базы данных: {innerException}" });
+                    usersByRole = await _context.Users
+                        .GroupBy(u => u.Role)
+                        .Select(g => new { role = g.Key, count = g.Count() })
+                        .ToListAsync(),
+                    booksByStatus = await _context.Books
+                        .GroupBy(b => b.Status)
+                        .Select(g => new { status = g.Key, count = g.Count() })
+                        .ToListAsync(),
+                    monthlyLoans = await _context.Loans
+                        .Where(l => l.IssueDate.Year == DateTime.Now.Year && l.IssueDate.Month == DateTime.Now.Month)
+                        .CountAsync(),
+                    popularGenres = await _context.Books
+                        .Where(b => b.Genre != null && b.Genre != "")
+                        .GroupBy(b => b.Genre)
+                        .Select(g => new { genre = g.Key, count = g.Count() })
+                        .OrderByDescending(g => g.count)
+                        .Take(5)
+                        .ToListAsync()
+                };
+
+                return Json(new { success = true, stats });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"Ошибка: {ex.Message}" });
+                return Json(new { success = false, message = $"Ошибка загрузки статистики: {ex.Message}" });
             }
         }
 
-        [HttpPost]
-        public async Task<JsonResult> UpdateUserRole()
+        [HttpGet]
+        public async Task<JsonResult> GetAllUsers()
         {
+            if (!HasAccess(new[] { "Admin", "SystemAdmin" }))
+                return Json(new { success = false, message = "Недостаточно прав" });
+
             try
             {
-                if (!HasAccess(new[] { "Admin", "SystemAdmin" }))
-                    return Json(new { success = false, message = "Недостаточно прав" });
+                var users = await _context.Users
+                    .OrderByDescending(u => u.RegistrationDate)
+                    .Select(u => new
+                    {
+                        id = u.Id,
+                        fullName = u.FullName,
+                        email = u.Email,
+                        studentId = u.StudentId,
+                        role = u.Role,
+                        registrationDate = u.RegistrationDate.ToString("yyyy-MM-ddTHH:mm:ss"),
+                        isActive = u.IsActive
+                    })
+                    .ToListAsync();
 
-                // Получаем данные из формы
-                var form = await Request.ReadFormAsync();
-                if (!int.TryParse(form["userId"], out int userId))
-                    return Json(new { success = false, message = "Некорректный ID пользователя" });
-
-                string newRole = form["newRole"].ToString();
-
-                var user = await _context.Users.FindAsync(userId);
-                if (user == null)
-                    return Json(new { success = false, message = "Пользователь не найден" });
-
-                user.Role = newRole;
-                await _context.SaveChangesAsync();
-
-                return Json(new
-                {
-                    success = true,
-                    message = $"Роль пользователя {user.FullName} изменена на {newRole}"
-                });
-            }
-            catch (DbUpdateException ex)
-            {
-                var innerException = ex.InnerException?.Message ?? ex.Message;
-                return Json(new { success = false, message = $"Ошибка базы данных: {innerException}" });
+                return Json(new { success = true, users });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = $"Ошибка: {ex.Message}" });
+                return Json(new { success = false, message = $"Ошибка загрузки пользователей: {ex.Message}" });
             }
         }
+       
+        // Модель для запроса изменения роли
+     
+
+        // Вспомогательный метод для отображения названий ролей
+      
+
+        // Вспомогательный метод для отображения названий ролей
+
 
         // 🔧 ФУНКЦИОНАЛ ДЛЯ СИСТЕМНОГО АДМИНИСТРАТОРА
         public IActionResult SystemAdmin()
