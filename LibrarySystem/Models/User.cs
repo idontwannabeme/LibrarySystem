@@ -24,6 +24,7 @@ namespace LibrarySystem.Models
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
         public bool IsActive { get; set; } = true;
 
+
         // Навигационные свойства
         public virtual ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
         public virtual ICollection<Loan> Loans { get; set; } = new List<Loan>();
