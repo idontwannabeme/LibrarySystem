@@ -1,0 +1,67 @@
+﻿﻿@{
+    ViewData["Title"] = "Регистрация - Библиотечная система";
+}
+
+<div style="min-height: 80vh; display: flex; align-items: center; justify-content: center;">
+    <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); max-width: 500px; width: 100%;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <h1 style="font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">📚 Регистрация</h1>
+            <p style="color: #666;">Создайте аккаунт читателя</p>
+        </div>
+
+        @if (ViewBag.Error != null)
+        {
+                <div style="background: #ffebee; color: #c62828; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border-left: 4px solid #f44336;">
+                @ViewBag.Error
+                </div>
+        }
+
+        <form method="post" action="/Home/Register">
+            <div style="display: grid; gap: 1.5rem;">
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">ФИО *</label>
+                    <input type="text" name="fullName" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease;">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Email *</label>
+                    <input type="email" name="email" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease;">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Пароль *</label>
+                    <input type="password" name="password" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease;">
+                </div>
+
+                <div>
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333;">Студенческий билет *</label>
+                    <input type="text" name="studentId" required style="width: 100%; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; font-size: 1rem; transition: border-color 0.3s ease;">
+                </div>
+
+                <button type="submit" style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; padding: 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1rem; transition: all 0.3s ease;">
+                    Зарегистрироваться
+                </button>
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e9ecef;">
+            <p style="color: #666; margin: 0;">Уже есть аккаунт?</p>
+            <a href="/Home/Login" style="color: #667eea; text-decoration: none; font-weight: 600;">Войти в систему</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Добавляем hover эффекты для полей ввода
+    document.addEventListener('DOMContentLoaded', function() {
+        const inputs = document.querySelectorAll('input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = '#667eea';
+            });
+            input.addEventListener('blur', function() {
+                this.style.borderColor = '#e9ecef';
+            });
+        });
+    });
+</script>

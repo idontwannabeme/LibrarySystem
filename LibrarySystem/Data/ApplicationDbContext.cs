@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using LibrarySystem.Models;
-using System.Collections.Generic;
 using System.Reflection.Emit;
 
 namespace LibrarySystem.Data
@@ -18,24 +17,72 @@ namespace LibrarySystem.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Начальные данные
-            modelBuilder.Entity<User>().HasData(
-                new User { Id = 1, Email = "reader@library.ru", Password = "123456", FullName = "Иванов Иван", Role = "Reader", StudentId = "ST001", Category = "Студент" },
-                new User { Id = 2, Email = "librarian@library.ru", Password = "123456", FullName = "Петрова С.М.", Role = "Librarian", Category = "Сотрудник" },
-                new User { Id = 3, Email = "admin@library.ru", Password = "123456", FullName = "Сидоров А.В.", Role = "Admin", Category = "Администратор" },
-                new User { Id = 4, Email = "sysadmin@library.ru", Password = "123456", FullName = "Кузнецов Д.С.", Role = "SystemAdmin", Category = "Системный администратор" }
-            );
+            // Настройка User
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Password).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Role).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.StudentId).HasMaxLength(50);
+                entity.Property(e => e.Category).HasMaxLength(50);
+                entity.Property(e => e.RegistrationDate).IsRequired();
 
-            modelBuilder.Entity<Book>().HasData(
-                new Book { Id = 1, Title = "Война и мир", Author = "Лев Толстой", Genre = "Классика", Year = 1869, Location = "Зал1-Ст2-Пол3", Status = "Available", ISBN = "978-5-699-12014-7" },
-                new Book { Id = 2, Title = "Преступление и наказание", Author = "Федор Достоевский", Genre = "Классика", Year = 1866, Location = "Зал1-Ст1-Пол2", Status = "Available", ISBN = "978-5-17-090345-2" },
-                new Book { Id = 3, Title = "Мастер и Маргарита", Author = "Михаил Булгаков", Genre = "Классика", Year = 1967, Location = "Зал1-Ст3-Пол1", Status = "Reserved", ReadingRoomOnly = true, ISBN = "978-5-389-08266-5" },
-                new Book { Id = 4, Title = "1984", Author = "Джордж Оруэлл", Genre = "Антиутопия", Year = 1949, Location = "Зал2-Ст1-Пол4", Status = "Available", ISBN = "978-5-17-080115-4" },
-                new Book { Id = 5, Title = "Гарри Поттер и философский камень", Author = "Джоан Роулинг", Genre = "Фэнтези", Year = 1997, Location = "Зал2-Ст2-Пол1", Status = "Issued", ISBN = "978-5-389-04865-4" },
-                new Book { Id = 6, Title = "Игра престолов", Author = "Джордж Мартин", Genre = "Фэнтези", Year = 1996, Location = "Зал2-Ст3-Пол2", Status = "Available", ISBN = "978-5-389-06553-8" },
-                new Book { Id = 7, Title = "Три товарища", Author = "Эрих Мария Ремарк", Genre = "Классика", Year = 1936, Location = "Зал1-Ст4-Пол1", Status = "Available", ISBN = "978-5-389-07134-8" },
-                new Book { Id = 8, Title = "Атлант расправил плечи", Author = "Айн Рэнд", Genre = "Философия", Year = 1957, Location = "Зал3-Ст1-Пол3", Status = "Available", ReadingRoomOnly = true, ISBN = "978-5-389-04853-1" }
-            );
+                // Уникальный индекс для email
+                entity.HasIndex(e => e.Email).IsUnique();
+            });
+
+            // Настройка Book
+            modelBuilder.Entity<Book>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.Author).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Genre).HasMaxLength(100);
+                entity.Property(e => e.ISBN).HasMaxLength(20);
+                entity.Property(e => e.Location).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.AcquisitionDate).IsRequired();
+            });
+
+            // Настройка Reservation
+            modelBuilder.Entity<Reservation>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+
+                // Внешние ключи
+                entity.HasOne(r => r.User)
+                      .WithMany(u => u.Reservations)
+                      .HasForeignKey(r => r.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(r => r.Book)
+                      .WithMany(b => b.Reservations)
+                      .HasForeignKey(r => r.BookId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Настройка Loan
+            modelBuilder.Entity<Loan>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+
+                // Внешние ключи
+                entity.HasOne(l => l.User)
+                      .WithMany(u => u.Loans)
+                      .HasForeignKey(l => l.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(l => l.Book)
+                      .WithMany(b => b.Loans)
+                      .HasForeignKey(l => l.BookId)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

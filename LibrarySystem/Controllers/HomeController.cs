@@ -73,9 +73,13 @@ namespace LibrarySystem.Controllers
 
         public IActionResult Register()
         {
+            // Если пользователь уже авторизован, перенаправляем на главную
+            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UserRole")))
+            {
+                return RedirectToAction("Index");
+            }
             return View();
         }
-
         [HttpPost]
         public async Task<IActionResult> Register(string fullName, string email, string password, string studentId)
         {
