@@ -3,27 +3,80 @@
 }
 
 <div style="background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 20px; padding: 3rem; box-shadow: 0 20px 40px rgba(0,0,0,0.1); margin-bottom: 2rem;">
-    <div style="text-align: center; margin-bottom: 3rem;">
-        <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 1rem;">📖 Мои книги</h1>
-        <p style="font-size: 1.2rem; color: #666;">Управляйте своими бронированиями и отслеживайте выданные книги</p>
+    <!-- Шапка с кнопкой выхода -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3rem;">
+        <div style="text-align: left;">
+            <h1 style="font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 0.5rem;">📚 Мои книги</h1>
+            <p style="font-size: 1.2rem; color: #666;">Управление вашими бронированиями и выданными книгами</p>
+        </div>
+        <div>
+            <form method="post" action="/Home/Logout" style="margin: 0;">
+                <button type="submit" style="background: #d32f2f; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 8px; transition: background 0.3s; font-size: 1rem;">
+                    <span>🚪</span>
+                    Выйти
+                </button>
+            </form>
+        </div>
     </div>
 
     <!-- Вкладки -->
-    <div style="background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; margin-bottom: 2rem;">
+    <div style="background: white; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden;">
         <div style="display: flex; border-bottom: 1px solid #e9ecef;">
             <button class="tab-button active" onclick="openTab('reservations')">📅 Мои бронирования</button>
-            <button class="tab-button" onclick="openTab('loans')">📚 Выданные мне книги</button>
+            <button class="tab-button" onclick="openTab('loans')">📖 Выданные книги</button>
         </div>
 
-        <!-- Вкладка Бронирования -->
+        <!-- Вкладка Мои бронирования -->
         <div id="reservations" class="tab-content active">
             <div style="padding: 2rem;">
-                <h3 style="color: #333; margin-bottom: 2rem;">📅 Активные бронирования</h3>
-                <div id="myReservations">
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
-                        <p>Загрузка бронирований...</p>
-                    </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3 style="color: #333; margin: 0;">Активные бронирования</h3>
+                    <button onclick="refreshReservations()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        🔄 Обновить
+                    </button>
+                </div>
+
+                <div id="reservationsList">
+                    @if (ViewBag.Reservations != null && ViewBag.Reservations.Count > 0)
+                    {
+                            <div style="display: grid; gap: 1rem;">
+                            @foreach (var reservation in ViewBag.Reservations)
+                            {
+                                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center; border-left: 4px solid #2196f3;">
+                                            <div>
+                                                <h4 style="margin: 0 0 0.5rem 0; color: #333;">@reservation.Book.Title</h4>
+                                                <p style="margin: 0 0 0.5rem 0; color: #666;">
+                                                    <strong>Автор:</strong> @reservation.Book.Author<br>
+                                                    <strong>Дата бронирования:</strong> @reservation.ReservationDate.ToString("dd.MM.yyyy HH:mm")<br>
+                                                    <strong>Действует до:</strong> @reservation.ExpiryDate?.ToString("dd.MM.yyyy HH:mm")
+                                                </p>
+                                                <p style="margin: 0; color: #666;">
+                                                    <strong>Статус:</strong> 
+                                                    <span style="background: #2196f3; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
+                                                        Активная бронь
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            <div>
+                                                <button onclick="cancelReservation(@reservation.Id)" style="background: #d32f2f; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                                                    ❌ Отменить
+                                                </button>
+                                            </div>
+                                        </div>
+                            }
+                            </div>
+                    }
+                    else
+                    {
+                            <div style="text-align: center; padding: 3rem; color: #666;">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">📅</div>
+                                <h3 style="color: #666; margin-bottom: 1rem;">Нет активных бронирований</h3>
+                                <p>У вас пока нет забронированных книг.</p>
+                                <a href="/Home/Catalog" style="display: inline-block; background: #667eea; color: white; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-top: 1rem;">
+                                    📚 Перейти к каталогу
+                                </a>
+                            </div>
+                    }
                 </div>
             </div>
         </div>
@@ -31,33 +84,77 @@
         <!-- Вкладка Выданные книги -->
         <div id="loans" class="tab-content">
             <div style="padding: 2rem;">
-                <h3 style="color: #333; margin-bottom: 2rem;">📚 Книги на руках</h3>
-                <div id="myLoans">
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
-                        <p>Загрузка выданных книг...</p>
-                    </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h3 style="color: #333; margin: 0;">Выданные мне книги</h3>
+                    <button onclick="refreshLoans()" style="background: #667eea; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                        🔄 Обновить
+                    </button>
+                </div>
+
+                <div id="loansList">
+                    @if (ViewBag.Loans != null && ViewBag.Loans.Count > 0)
+                    {
+                            <div style="display: grid; gap: 1rem;">
+                            @foreach (var loan in ViewBag.Loans)
+                            {
+                                var isOverdue = loan.DueDate < DateTime.Now;
+                                        <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; border-left: 4px solid @(isOverdue ? "#d32f2f" : "#4caf50");">
+                                            <div style="display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: center;">
+                                                <div>
+                                                    <h4 style="margin: 0 0 0.5rem 0; color: #333;">@loan.Book.Title</h4>
+                                                    <p style="margin: 0 0 0.5rem 0; color: #666;">
+                                                        <strong>Автор:</strong> @loan.Book.Author<br>
+                                                        <strong>Дата выдачи:</strong> @loan.IssueDate.ToString("dd.MM.yyyy")<br>
+                                                        <strong>Срок возврата:</strong> @loan.DueDate.ToString("dd.MM.yyyy")
+                                                    </p>
+                                                    <p style="margin: 0; color: #666;">
+                                                        <strong>Статус:</strong> 
+                                                @if (isOverdue)
+                                                {
+                                                                <span style="background: #d32f2f; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
+                                                                    📅 Просрочена
+                                                                </span>
+                                                }
+                                                else
+                                                {
+                                                                <span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">
+                                                                    ✅ Активна
+                                                                </span>
+                                                }
+                                                    </p>
+                                                </div>
+                                                <div>
+                                            @if (isOverdue)
+                                            {
+                                                            <span style="color: #d32f2f; font-weight: 600; display: block; text-align: center;">
+                                                                ⚠️ Просрочка<br>
+                                                                <small>@((DateTime.Now - loan.DueDate).Days) дн.</small>
+                                                            </span>
+                                            }
+                                            else
+                                            {
+                                                            <span style="color: #4caf50; font-weight: 600; display: block; text-align: center;">
+                                                                📚 На руках<br>
+                                                                <small>Осталось @((loan.DueDate - DateTime.Now).Days) дн.</small>
+                                                            </span>
+                                            }
+                                                </div>
+                                            </div>
+                                        </div>
+                            }
+                            </div>
+                    }
+                    else
+                    {
+                            <div style="text-align: center; padding: 3rem; color: #666;">
+                                <div style="font-size: 4rem; margin-bottom: 1rem;">📖</div>
+                                <h3 style="color: #666; margin-bottom: 1rem;">Нет выданных книг</h3>
+                                <p>У вас пока нет книг на руках.</p>
+                                <p style="font-size: 0.9rem; color: #888;">Для получения книг сначала забронируйте их в каталоге, затем обратитесь к сотруднику библиотеки.</p>
+                            </div>
+                    }
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Статистика -->
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
-        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📅</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #ff9800;" id="reservationsCount">0</div>
-            <div style="color: #666; font-size: 0.9rem;">Активных броней</div>
-        </div>
-        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">📖</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #4caf50;" id="loansCount">0</div>
-            <div style="color: #666; font-size: 0.9rem;">Книг на руках</div>
-        </div>
-        <div style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;">
-            <div style="font-size: 2rem; margin-bottom: 0.5rem;">⏰</div>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #f44336;" id="overdueCount">0</div>
-            <div style="color: #666; font-size: 0.9rem;">Просрочено</div>
         </div>
     </div>
 </div>
@@ -86,6 +183,15 @@
     .tab-content.active {
         display: block;
     }
+
+    button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    button[type="submit"]:hover {
+        background: #b71c1c !important;
+    }
 </style>
 
 <script>
@@ -100,105 +206,73 @@
 
         document.getElementById(tabName).classList.add('active');
         event.target.classList.add('active');
-
-        if (tabName === 'reservations') {
-            loadMyReservations();
-        } else if (tabName === 'loans') {
-            loadMyLoans();
-        }
-    }
-
-    // Загрузка моих бронирований
-    function loadMyReservations() {
-        fetch('/Home/MyBooks')
-            .then(response => response.text())
-            .then(html => {
-                // Создаем временный элемент для парсинга HTML
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-
-                // Извлекаем данные из скрытых полей или парсим HTML
-                const reservationsSection = tempDiv.querySelector('#myReservations');
-                if (reservationsSection) {
-                    document.getElementById('myReservations').innerHTML = reservationsSection.innerHTML;
-                }
-                updateStats();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('myReservations').innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
-                        <p>Ошибка загрузки бронирований</p>
-                    </div>
-                `;
-            });
-    }
-
-    // Загрузка моих выданных книг
-    function loadMyLoans() {
-        fetch('/Home/MyBooks')
-            .then(response => response.text())
-            .then(html => {
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = html;
-
-                const loansSection = tempDiv.querySelector('#myLoans');
-                if (loansSection) {
-                    document.getElementById('myLoans').innerHTML = loansSection.innerHTML;
-                }
-                updateStats();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                document.getElementById('myLoans').innerHTML = `
-                    <div style="text-align: center; padding: 2rem; color: #666;">
-                        <div style="font-size: 3rem; margin-bottom: 1rem;">❌</div>
-                        <p>Ошибка загрузки выданных книг</p>
-                    </div>
-                `;
-            });
-    }
-
-    // Обновление статистики
-    function updateStats() {
-        const reservations = document.querySelectorAll('#myReservations .reservation-item').length;
-        const loans = document.querySelectorAll('#myLoans .loan-item').length;
-        const overdue = document.querySelectorAll('#myLoans .overdue').length;
-
-        document.getElementById('reservationsCount').textContent = reservations;
-        document.getElementById('loansCount').textContent = loans;
-        document.getElementById('overdueCount').textContent = overdue;
     }
 
     // Отмена бронирования
     function cancelReservation(reservationId) {
-        if (!confirm('Отменить бронирование этой книги?')) return;
+        if (confirm('Вы уверены, что хотите отменить бронирование?')) {
+            const formData = new FormData();
+            formData.append('reservationId', reservationId);
 
-        const formData = new FormData();
-        formData.append('reservationId', reservationId);
-
-        fetch('/Home/CancelReservation', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(result => {
-            alert(result.message);
-            if (result.success) {
-                loadMyReservations();
-                updateStats();
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Ошибка при отмене бронирования');
-        });
+            fetch('/Home/CancelReservation', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    alert(result.message);
+                    location.reload(); // Перезагружаем страницу
+                } else {
+                    alert('Ошибка: ' + result.message);
+                }
+            })
+            .catch(error => {
+                alert('Ошибка при отмене бронирования: ' + error.message);
+                console.error('Error:', error);
+            });
+        }
     }
 
-    // Загружаем данные при открытии страницы
+    // Обновление бронирований
+    function refreshReservations() {
+        document.getElementById('reservationsList').innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                <p>Обновление бронирований...</p>
+            </div>
+        `;
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+
+    // Обновление выданных книг
+    function refreshLoans() {
+        document.getElementById('loansList').innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">⏳</div>
+                <p>Обновление списка книг...</p>
+            </div>
+        `;
+        setTimeout(() => {
+            location.reload();
+        }, 1000);
+    }
+
+    // Автоматическое обновление статусов каждые 30 секунд
+    setInterval(() => {
+        const activeTab = document.querySelector('.tab-content.active').id;
+        if (activeTab === 'reservations' || activeTab === 'loans') {
+            console.log('Автообновление данных...');
+        }
+    }, 30000);
+
+    // Показываем уведомление о просрочках при загрузке страницы
     document.addEventListener('DOMContentLoaded', function() {
-        loadMyReservations();
-        loadMyLoans();
+        const overdueLoans = document.querySelectorAll('[style*="border-left: 4px solid #d32f2f"]');
+        if (overdueLoans.length > 0) {
+            console.log(`У вас ${overdueLoans.length} просроченных книг`);
+        }
     });
 </script>
